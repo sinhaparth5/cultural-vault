@@ -242,10 +242,6 @@ public class User implements UserDetails {
     }
 }
 
-enum Role {
-    USER, ADMIN, MODERATOR
-}
-
 class UserPreferences {
     private List<String> favoriteGenres; // ADVENTURE, HISTORICAL, MYSTERY, etc.
     private StoryLength preferredLength = StoryLength.MEDIUM;

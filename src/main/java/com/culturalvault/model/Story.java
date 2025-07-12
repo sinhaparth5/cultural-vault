@@ -199,32 +199,6 @@ public class Story {
     }
 }
 
-enum StoryGenre {
-    ADVENTURE, HISTORICAL, MYSTERY, ROMANCE, EDUCATIONAL, FANTASY
-}
-
-enum StoryLength {
-    SHORT(100, 200),    // 100-200 words
-    MEDIUM(300, 500),   // 300-500 words
-    LONG(600, 1000);    // 600-1000 words
-    
-    private final int minWords;
-    private final int maxWords;
-    
-    StoryLength(int minWords, int maxWords) {
-        this.minWords = minWords;
-        this.maxWords = maxWords;
-    }
-    
-    public int getMinWords() {
-        return minWords;
-    }
-    
-    public int getMaxWords() {
-        return maxWords;
-    }
-}
-
 class StoryFeedback {
     private String userId;
     private int rating; // 1-5 stars
