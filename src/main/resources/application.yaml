@@ -1,0 +1,94 @@
+spring:
+  application:
+    name: CultureVault
+
+# MongoDB Configuration
+data:
+  mongodb:
+    host: localhost
+    port : 27017
+    database: culture_vault
+    # authentication-database: admin
+    # username: vault_user
+    # password: vault_pass
+    
+# Thymeleaf
+thymeleaf:
+  prefix: classpath:/templates/
+  suffix: .html
+  mode: HTML 
+  encoding: UTF-8
+  cache: false # disable in development
+
+# File Upload Configuration
+servlet:
+  multipart:
+    max-file-size: 30MB 
+    max-request-size: 30MB 
+    enabled: true
+
+# Security Configuration 
+security:
+  user:
+    name: admin
+    password: admin123
+    roles: ADMIN 
+
+# Server configuration 
+server:
+  port: 8080
+  servlet:
+    context-path: / 
+
+# Custom application properties
+app:
+  jwt:
+    secret: dGhpcyBpcyBhIHNlY3JldCBrZXkgZm9yIEN1bHR1cmFsVmF1bHQ=
+    expiration: 3600
+  
+  # Cloudflare R2 configuration 
+  storage:
+    r2:
+      access-key-id: ${R2_ACCESS_KEY_ID:}
+      secret-access-key: ${R2_SECRET_ACCESS_KEY:}
+      bucket-name: cultural-vault-artifacts
+      endpoint: ${R2_ENPOINT}
+      region: auto 
+  
+  # AI Service configuration 
+  ai:
+    service:
+      base-url: http://localhost:5000
+      timeout: 3000 
+
+  api:
+    europeana:
+      base-url: https://api.europeana.eu/record/v2
+      api-key: ${EUROPEANA_API_KEY:}
+      rate-limit: 10000
+
+    simthsonian:
+      base-url: https://api.si.edu/openaccess/api/v1.0
+      rate-limit: 1000 
+
+# Loggin configuration 
+logging:
+  level:
+    com.culturevault: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/culture-vault.log 
+
+# Management and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
