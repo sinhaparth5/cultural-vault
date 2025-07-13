@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.culturalvault.model.Artifact;
 import com.culturalvault.repository.ArtifactRepository;
+import com.culturalvault.repository.CategoryStats;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -228,11 +229,18 @@ public class ArtifactService {
         return artifactRepository.findBySourceAndSourceId(source, sourceId);
     }
     
-    public List<Artifact> getArtifactsBySource(String source) {
+    public Page<Artifact> getArtifactsBySource(String source, Pageable pageable) {
         log.debug("Fetching artifacts by source: {}", source);
-        return artifactRepository.findBySource(source);
+        return artifactRepository.findBySource(source, pageable);
     }
     
+    public List<Artifact> getArtifactsBySource(String source) {
+        log.debug("Fetching all artifacts by source: {}", source);
+        // Get first 1000 results (reasonable limit)
+        Page<Artifact> page = artifactRepository.findBySource(source, PageRequest.of(0, 1000));
+        return page.getContent();
+    }
+
     public List<Artifact> getRecentArtifacts(int days) {
         log.debug("Fetching artifacts from last {} days", days);
         LocalDateTime since = LocalDateTime.now().minusDays(days);
