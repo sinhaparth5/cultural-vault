@@ -31,21 +31,21 @@ public interface ArtifactRepository extends MongoRepository<Artifact, String> {
     Page<Artifact> findByPeriod(String period, Pageable pageable);
     Page<Artifact> findByMaterial(String material, Pageable pageable);
     Page<Artifact> findBySource(String source, Pageable pageable);
-
-    // Case-insensitive search
+    
+    // Case-insensitive searches
     Page<Artifact> findByCategoryIgnoreCase(String category, Pageable pageable);
     Page<Artifact> findByCultureIgnoreCase(String culture, Pageable pageable);
     Page<Artifact> findByPeriodIgnoreCase(String period, Pageable pageable);
-
+    
     // Text search using MongoDB text index
     @Query("{ $text: { $search: ?0 } }")
     Page<Artifact> findByTextSearch(String searchText, Pageable pageable);
-
-    // Adavanced search
+    
+    // Advanced text search with score
     @Query(value = "{ $text: { $search: ?0 } }", 
            sort = "{ score: { $meta: 'textScore' } }")
     List<Artifact> findByTextSearchWithScore(String searchText);
-
+    
     // Multi-criteria search
     @Query("{ $and: [ " +
            "{ $or: [ {category: {$regex: ?0, $options: 'i'}}, {category: {$exists: false}} ] }, " +
@@ -53,31 +53,37 @@ public interface ArtifactRepository extends MongoRepository<Artifact, String> {
            "{ $or: [ {period: {$regex: ?2, $options: 'i'}}, {period: {$exists: false}} ] } " +
            "] }")
     Page<Artifact> findByCriteria(String category, String culture, String period, Pageable pageable);
-
-    // Find artifacts with non-null analysis
-    @Query("{ 'anaylsis': { $exists: true, $ne: null } }")
+    
+    // Find artifacts with non-null analysis (AI processed) - FIXED TYPO
+    @Query("{ 'analysis': { $exists: true, $ne: null } }")
     Page<Artifact> findAnalyzedArtifacts(Pageable pageable);
-
-    // Find artifacts without analysis
-    @Query("{ $or: [ { 'analysis': {$exists: false}}, {'analysis': null } ] }")
+    
+    // Find artifacts without analysis (need AI processing)
+    @Query("{ $or: [ {'analysis': {$exists: false}}, {'analysis': null} ] }")
     Page<Artifact> findUnanalyzedArtifacts(Pageable pageable);
-
-   // Random sampling for recommendations
-   @Aggregation(pipeline = {
-       "{ $match: { category: ?0 } }",
-       "{ $sample: { size: ?1 } }"
-   })
-   List<Artifact> findRandomByArtifactsByCategory(String category, int count);
-
-   // Find similar artifacts by culture and period
-   @Query("{ $and: [ "  + 
+    
+    // Random sampling for recommendations
+    @Aggregation(pipeline = {
+        "{ $sample: { size: ?0 } }"
+    })
+    List<Artifact> findRandomArtifacts(int count);
+    
+    // Random artifacts by category
+    @Aggregation(pipeline = {
+        "{ $match: { category: ?0 } }",
+        "{ $sample: { size: ?1 } }"
+    })
+    List<Artifact> findRandomArtifactsByCategory(String category, int count);
+    
+    // Find similar artifacts by culture and period
+    @Query("{ $and: [ " +
            "{ culture: ?0 }, " +
            "{ period: ?1 }, " +
            "{ _id: { $ne: ?2 } } " +
-          "] }")
-   List<Artifact> findSimilarArtifacts(String culture, String period, String artifactId, Pageable pageable);
-
-   // Find artifacts created within date range
+           "] }")
+    List<Artifact> findSimilarArtifacts(String culture, String period, String excludeId, Pageable pageable);
+    
+    // Find artifacts created within date range
     List<Artifact> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
     
     // Find artifacts by source and sourceId
@@ -123,12 +129,4 @@ public interface ArtifactRepository extends MongoRepository<Artifact, String> {
         "{ $sort: { count: -1 } }"
     })
     List<CategoryStats> getCategoryStatistics();
-}
-
-// DTO for category statistics
-interface CategoryStats {
-    String getId(); // category name
-    int getCount();
-    List<String> getCultures();
-    List<String> getPeriods();
 }
